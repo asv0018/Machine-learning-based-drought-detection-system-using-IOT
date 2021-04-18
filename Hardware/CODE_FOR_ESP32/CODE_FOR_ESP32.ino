@@ -2,13 +2,13 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "DHTesp.h"
-#include "Ticker.h"
 
 #ifndef ESP32
 #pragma message(THIS EXAMPLE IS FOR ESP32 ONLY!)
 #error Select ESP32 board.
 #endif
 
+#define LED 2
 // Uncomment one of the lines below for whatever DHT sensor type you're using!
 #define DHTTYPE DHT11   // DHT 11
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
@@ -43,7 +43,8 @@ void setup() {
 
   dht.setup(dhtPin, DHTesp::DHT11);
   Serial.println("DHT initiated");
-  
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
   
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
@@ -54,7 +55,7 @@ void setup() {
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
- 
+  digitalWrite(LED,HIGH);
   Serial.println("Timer set to 5 seconds (timerDelay variable), it will take 5 seconds before publishing the first reading.");
 }
 
@@ -64,7 +65,7 @@ float soil_moisture = 0;
 
 void loop() {
   TempAndHumidity newValues = dht.getTempAndHumidity();
-  
+  digitalWrite(LED,HIGH);
   float temp_temp = newValues.temperature;
   float temp_hum = newValues.humidity;
   if((String(temp_temp)!="nan")&&(String(temp_hum)!="nan")){
@@ -101,7 +102,11 @@ void loop() {
         Serial.print("HTTP Response code: ");
         Serial.println(httpResponseCode);
         String payload = http.getString();
+        if (payload=="SUCCESS"){
+          digitalWrite(LED,LOW);
+        }
         Serial.println(payload);
+        
       }
       else {
         Serial.print("Error code: ");
